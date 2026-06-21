@@ -28,6 +28,9 @@ jobs:
           auto-update-conda: true
           python-version: "3.12.7"
           
+      - name: Install MLflow
+        run: pip install mlflow
+          
       # Run as a mlflow project
       - name: Run mlflow project
         env:
