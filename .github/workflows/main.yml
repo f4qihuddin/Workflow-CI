@@ -32,7 +32,7 @@ jobs:
       - name: Run mlflow project
         env:
           MLFLOW_ALLOW_FILE_STORE: true
-        run: mlflow run . --env-manager=local 
+        run: mlflow run MLProject --env-manager=local 
       
       # Get latest run_id
       - name: Get latest MLflow run_id
