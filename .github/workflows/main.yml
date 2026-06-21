@@ -36,6 +36,7 @@ jobs:
         env:
           MLFLOW_ALLOW_FILE_STORE: true
         run: |
+          export PATH="$CONDA/bin:$PATH"
           mlflow run MLProject --env-manager=conda
       
       # Get latest run_id
