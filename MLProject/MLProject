@@ -1,0 +1,14 @@
+name: proyek-coffeebeans-classification
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      n_filters: {type: int, default: 32}
+      filter_size: {type: tuple, default: (3, 3)}
+      activation: {type: str, default: 'relu'}
+      input_shape: {type: tuple, default: (150, 150, 1)}
+      dense_1: {type: int, default: 128}
+      dense_2: {type: int, default: 64}
+    command: "python modelling.py {n_filters} {filter_size} {activation} {input_shape} {dense_1} {dense_2}"
