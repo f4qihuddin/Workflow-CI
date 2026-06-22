@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12.7"
           
       - name: Install MLflow
-        run: pip install mlflow
+        run: pip install mlflow==2.19.0
           
       # Run as a mlflow project
       - name: Run mlflow project
