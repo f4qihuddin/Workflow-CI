@@ -42,7 +42,7 @@ jobs:
           # Beri jeda 3 detik agar server siap menerima koneksi
           sleep 3
           # Jalankan project Anda
-          mlflow run MLproject --env-manager=conda
+          mlflow run MLproject -P n_filters="32" filter_size="3,3" activation="relu" input_shape="150,150,1" dense_1="128" dense_2="64" --env-manager=conda
       
       # Get latest run_id
       - name: Get latest MLflow run_id
