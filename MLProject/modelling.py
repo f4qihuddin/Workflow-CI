@@ -5,7 +5,6 @@ import mlflow
 import sys
 
 mlflow.set_experiment("coffeebeans-classification")
-mlflow.set_tracking_uri("http://127.0.0.1:5000/")
 
 X_train = np.load('coffeebeans_preprocessing/X_train.npy')
 y_train = np.load('coffeebeans_preprocessing/y_train.npy')
