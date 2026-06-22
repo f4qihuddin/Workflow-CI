@@ -53,25 +53,21 @@ jobs:
           
       - name: Build Docker Model
         run: |
-          # 1. Mengambil RUN_ID terbaru secara aman
-          RUN_ID=$(python -c "import mlflow; client = mlflow.MlflowClient(); exp = client.get_experiment_by_name('coffeebeans-classification'); runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else '')")
-          
-          # 2. Generate Dockerfile (Tanpa flag --base-image yang menyebabkan error)
+          # 1. Generate Dockerfile
           mlflow models generate-dockerfile \
             --model-uri "runs:/$RUN_ID/model" \
             --output-directory docker_build_dir \
             --env-manager=conda
           
-          # 3. Ganti base image secara paksa menggunakan sed
-          # Baris ini memastikan kita menggunakan image yang diinginkan tanpa error opsi
-          sed -i 's|^FROM.*|FROM python:3.12.7-slim|g' docker_build_dir/Dockerfile
-          
-          # 4. Tambahkan perbaikan untuk error apt-get update
-          # Kita menyisipkan perintah update sebelum proses install di Dockerfile
-          sed -i '/RUN apt-get update/d' docker_build_dir/Dockerfile || true
+          # 2. Perbaiki apt-get update dan ganti Java 11 ke 17
+          # Memastikan ada update dan mengganti paket java yang usang ke yang tersedia
           sed -i 's|RUN apt-get install|RUN apt-get update \&\& apt-get install|g' docker_build_dir/Dockerfile
+          sed -i 's|openjdk-11-jdk|openjdk-17-jdk|g' docker_build_dir/Dockerfile
           
-          # 5. Build manual
+          # 3. Update path JAVA_HOME agar sesuai dengan versi 17
+          sed -i 's|java-11-openjdk-amd64|java-17-openjdk-amd64|g' docker_build_dir/Dockerfile
+          
+          # 4. Build
           docker build -t coffeebeansclassification docker_build_dir
           
       # Login to Docker Hub
