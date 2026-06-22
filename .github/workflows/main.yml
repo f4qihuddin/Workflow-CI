@@ -53,21 +53,26 @@ jobs:
           
       - name: Build Docker Model
         run: |
-          # ... (get RUN_ID script) ...
+          # 1. Mengambil RUN_ID terbaru secara aman
           RUN_ID=$(python -c "import mlflow; client = mlflow.MlflowClient(); exp = client.get_experiment_by_name('coffeebeans-classification'); runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else '')")
-          # 1. Generate default Dockerfile
+          
+          # 2. Generate Dockerfile (Tanpa flag --base-image yang menyebabkan error)
           mlflow models generate-dockerfile \
             --model-uri "runs:/$RUN_ID/model" \
             --output-directory docker_build_dir \
             --env-manager=conda
           
-          # 2. Ganti base image secara paksa dengan sed
-          # Mengganti baris pertama yang diawali dengan 'FROM'
+          # 3. Ganti base image secara paksa menggunakan sed
+          # Baris ini memastikan kita menggunakan image yang diinginkan tanpa error opsi
           sed -i 's|^FROM.*|FROM python:3.12.7-slim|g' docker_build_dir/Dockerfile
           
-          # 3. Build manual
-          cd docker_build_dir
-          docker build -t coffeebeansclassification .
+          # 4. Tambahkan perbaikan untuk error apt-get update
+          # Kita menyisipkan perintah update sebelum proses install di Dockerfile
+          sed -i '/RUN apt-get update/d' docker_build_dir/Dockerfile || true
+          sed -i 's|RUN apt-get install|RUN apt-get update \&\& apt-get install|g' docker_build_dir/Dockerfile
+          
+          # 5. Build manual
+          docker build -t coffeebeansclassification docker_build_dir
           
       # Login to Docker Hub
       - name: Log in to Docker Hub
