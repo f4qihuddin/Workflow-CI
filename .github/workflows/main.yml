@@ -12,6 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:           # <--- Tambahkan blok ini
+      contents: write
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
@@ -42,33 +45,28 @@ jobs:
           # Beri jeda 3 detik agar server siap menerima koneksi
           sleep 3
           # Jalankan project Anda
-          mlflow run MLproject --env-manager=conda
+          mlflow run MLproject --env-manager=conda --experiment-name="coffeebeans-classification" -P n_filters=32 -P filter_size="3,3" -P activation="relu" -P input_shape="150,150,1" -P dense_1=128 -P dense_2=64
       
-      # Get latest run_id
-      - name: Get latest MLflow run_id
+      - name: Commit and Push MLflow Artifacts to LFS
         run: |
-          RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
-          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-          echo "Latest run_id: $RUN_ID"
+          # 1. Konfigurasi identitas Git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-      # Build Docker Model
-      - name: Build Docker Model
-        run: |
-          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "coffeebeansclassification" 
-
-      # Login to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      # Tag the Docker image
-      - name: Tag Docker Image
-        run: |
-          docker tag coffeebeansclassification ${{ secrets.DOCKER_HUB_USERNAME }}/coffeebeansclassification:latest
-
-      # Push Docker image to Docker Hub
-      - name: Push Docker Image
-        run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coffeebeansclassification:latest
+          # 2. Inisialisasi Git LFS di dalam Runner Actions
+          git lfs install
+          
+          # 3. Daftarkan jenis file besar yang ingin dimasukkan ke LFS otomatis
+          # Anda bisa menambah ekstensi lain seperti *.pkl, *.pt, *.keras sesuai kebutuhan
+          git lfs track "mlruns/**/*.h5"
+          git lfs track "mlruns/**/*.pkl"
+          git lfs track "mlruns/**/*.keras"
+          git lfs track "mlruns/**/artifacts/**"
+          
+          # 4. Tambahkan file .gitattributes (tempat tracking LFS disimpan) dan folder mlruns
+          git add .gitattributes
+          git add mlruns/
+          
+          # 5. Commit dan Push ke GitHub
+          git commit -m "Auto-update MLflow large artifacts via Git LFS [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main
