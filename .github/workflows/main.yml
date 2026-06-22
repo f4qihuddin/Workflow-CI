@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12.7"
           
       - name: Install MLflow
-        run: pip install mlflow
+        run: pip install mlflow==2.19.0
           
       # Run as a mlflow project
       - name: Run mlflow project
@@ -42,7 +42,7 @@ jobs:
           # Beri jeda 3 detik agar server siap menerima koneksi
           sleep 3
           # Jalankan project Anda
-          mlflow run . --env-manager=conda
+          mlflow run MLproject --env-manager=conda
       
       # Get latest run_id
       - name: Get latest MLflow run_id
