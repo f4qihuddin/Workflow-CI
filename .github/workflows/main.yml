@@ -53,16 +53,18 @@ jobs:
           
       - name: Build Docker Model
         run: |
-          # Ambil RUN_ID
           RUN_ID=$(python -c "import mlflow; client = mlflow.MlflowClient(); exp = client.get_experiment_by_name('coffeebeans-classification'); runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC'], max_results=1); print(runs[0].info.run_id) if runs else print('')")
           
-          echo "RUN_ID: $RUN_ID"
-          
-          # Contoh jika menggunakan perintah build-docker
-          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" \
-            --name "coffeebeansclassification" \
+          # 1. Generate Dockerfile dengan base image kustom
+          mlflow models generate-dockerfile \
+            --model-uri "runs:/$RUN_ID/model" \
+            --output-directory docker_build_dir \
             --env-manager=conda \
             --base-image="python:3.12.7-slim"
+        
+            # 2. Build manual menggunakan Docker CLI
+            cd docker_build_dir
+            docker build -t coffeebeansclassification .
           
       # Login to Docker Hub
       - name: Log in to Docker Hub
