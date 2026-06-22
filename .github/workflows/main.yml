@@ -58,15 +58,11 @@ jobs:
           
           echo "RUN_ID: $RUN_ID"
           
-          # 1. Generate Dockerfile saja (ini langkah paling aman)
-          mlflow models generate-dockerfile --model-uri "runs:/$RUN_ID/model" --output-directory docker_build_dir --env-manager=conda
-          
-          # 2. Build Docker menggunakan perintah asli Docker (agar bisa pakai --no-cache)
-          # Kita masuk ke direktori hasil generate tadi
-          cd docker_build_dir
-          
-          # Gunakan --no-cache di sini, karena ini perintah Docker asli
-          docker build --no-cache -t coffeebeansclassification .
+          # Contoh jika menggunakan perintah build-docker
+          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" \
+            --name "coffeebeansclassification" \
+            --env-manager=conda \
+            --base-image="python:3.12.7-slim"
           
       # Login to Docker Hub
       - name: Log in to Docker Hub
