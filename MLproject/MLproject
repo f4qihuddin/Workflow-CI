@@ -1,4 +1,4 @@
-name: proyek-coffeebeans-classification
+name: coffeebeans-classification
 
 conda_env: conda.yaml
 
