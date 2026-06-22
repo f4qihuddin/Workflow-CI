@@ -53,6 +53,7 @@ jobs:
           
       - name: Build Docker Model
         run: |
+          RUN_ID=$(python -c "import mlflow; client = mlflow.MlflowClient(); exp = client.get_experiment_by_name('coffeebeans-classification'); runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else '')")
           # 1. Generate Dockerfile
           mlflow models generate-dockerfile \
             --model-uri "runs:/$RUN_ID/model" \
