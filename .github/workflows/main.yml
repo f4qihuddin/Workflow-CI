@@ -37,7 +37,12 @@ jobs:
           MLFLOW_ALLOW_FILE_STORE: true
         run: |
           export PATH="$CONDA/bin:$PATH"
-          mlflow run MLProject --env-manager=conda
+          # Jalankan server MLflow di background pada port 5000
+          mlflow server --host 127.0.0.1 --port 5000 &
+          # Beri jeda 3 detik agar server siap menerima koneksi
+          sleep 3
+          # Jalankan project Anda
+          mlflow run . --env-manager=conda
       
       # Get latest run_id
       - name: Get latest MLflow run_id
