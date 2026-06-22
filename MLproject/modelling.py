@@ -15,18 +15,13 @@ y_test = np.load('coffeebeans_preprocessing/y_test.npy')
 
 input_example = X_train[0:5]
 
-active_run = mlflow.active_run()
-
-if active_run:
-    # Jika sudah ada, gunakan run yang sudah aktif tersebut
-    print(f"Menggunakan run yang sudah ada: {active_run.info.run_id}")
-    # Anda tidak perlu memanggil start_run() lagi
-else:
-    # Jika belum ada, baru mulai run baru
-    mlflow.start_run()
-    print("Memulai run baru")
-
+# 1. Pastikan autolog diaktifkan DI AWAL sebelum memulai/mengelola run
 mlflow.autolog()
+
+# 2. Cukup gunakan ini, MLflow akan otomatis mendeteksi run yang sudah ada 
+# (dari CLI) atau memulai yang baru jika tidak ada.
+if not mlflow.active_run():
+    mlflow.start_run()
 
 class myCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
