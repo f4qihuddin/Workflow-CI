@@ -52,21 +52,21 @@ jobs:
           echo "Latest run_id: $RUN_ID"
           
       - name: Build Docker Model
-        env:
-          # Memaksa MLflow menggunakan base image dengan versi Python yang lebih aman
-          MLFLOW_DOCKER_IMAGE_NAME: "mlflow-docker-container"
         run: |
           # Ambil RUN_ID
           RUN_ID=$(python -c "import mlflow; client = mlflow.MlflowClient(); exp = client.get_experiment_by_name('coffeebeans-classification'); runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC'], max_results=1); print(runs[0].info.run_id) if runs else print('')")
           
-          echo "RUN_ID yang berhasil diambil: $RUN_ID"
+          echo "RUN_ID: $RUN_ID"
           
-          if [ -z "$RUN_ID" ]; then
-            echo "Error: Tidak ada RUN_ID yang ditemukan!"
-            exit 1
-          fi
+          # 1. Generate Dockerfile saja (ini langkah paling aman)
+          mlflow models generate-dockerfile --model-uri "runs:/$RUN_ID/model" --output-directory docker_build_dir --env-manager=conda
           
-          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "coffeebeansclassification" --env-manager=conda --no-cache
+          # 2. Build Docker menggunakan perintah asli Docker (agar bisa pakai --no-cache)
+          # Kita masuk ke direktori hasil generate tadi
+          cd docker_build_dir
+          
+          # Gunakan --no-cache di sini, karena ini perintah Docker asli
+          docker build --no-cache -t coffeebeansclassification .
           
       # Login to Docker Hub
       - name: Log in to Docker Hub
